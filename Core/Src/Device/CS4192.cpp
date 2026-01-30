@@ -40,3 +40,7 @@ void CS4192::Update() {
 	HAL_GPIO_WritePin(&m_cs_port, m_cs_pin, GPIO_PinState::GPIO_PIN_SET);
 	HAL_SPI_Transmit_DMA(&m_hspi, m_buffer.data(), m_buffer.size());
 }
+
+void CS4192::TxCpltCallback() {
+	HAL_GPIO_WritePin(&m_cs_port, m_cs_pin, GPIO_PinState::GPIO_PIN_RESET);
+}
