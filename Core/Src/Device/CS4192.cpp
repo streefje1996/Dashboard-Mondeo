@@ -2,15 +2,15 @@
 #include "CS4192.hpp"
 
 void CS4192::FillBufferOfGauge(const uint8_t& gauge, const uint16_t& value) {
-	if (gauge >= NUM_GAUGES) return;
+	if (gauge >= m_numGauges) return;
 	// 0x3FF is the max 10 bit value
 	if (value > 0x3FF) return;
 
 	// Calculate buffer index and offset using 8 bits
-	int buffer_index = (gauge * GAUGE_RESOLUTION) % 8;
-	int offset_lsb = (gauge * GAUGE_RESOLUTION) - (8 * buffer_index);
+	int buffer_index = (gauge * m_gaugeResolution) % 8;
+	int offset_lsb = (gauge * m_gaugeResolution) - (8 * buffer_index);
 	int remaining_bits_to_send = 8 - offset_lsb;
-	int offset_msb = GAUGE_RESOLUTION - remaining_bits_to_send;
+	int offset_msb = m_gaugeResolution - remaining_bits_to_send;
 
 	// Fill buffer
 	m_buffer[buffer_index] &= ~(0xFF << offset_lsb);
