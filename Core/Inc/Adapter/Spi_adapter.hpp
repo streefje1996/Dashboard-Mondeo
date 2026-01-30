@@ -20,7 +20,7 @@ public:
 	static void Interupt_handler();
 
 private:
-	static DelegateVoid s_callback;
+	static inline DelegateVoid s_callback;
 
 	Spi_adaptor() = default;
 	~Spi_adaptor() = default;

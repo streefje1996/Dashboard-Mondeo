@@ -16,7 +16,7 @@
 class CS4192 {
 private:
 	static constexpr uint8_t s_gaugeResolution{10};
-	static constexpr float s_resolutionPerAngle{1023/360};
+	static constexpr float s_resolutionPerAngle{1023.f/360.f};
 
 	const uint8_t c_numGauges{4};
 
@@ -24,19 +24,20 @@ private:
 
 	SPI_HandleTypeDef& m_hspi;
 
-	GPIO_TypeDef& m_cs_port;
+	GPIO_TypeDef* m_cs_port;
 	const uint16_t c_cs_pin;
 
-	GPIO_TypeDef& m_oe_port;
+	GPIO_TypeDef* m_oe_port;
 	const uint16_t c_oe_pin;
 
-	// 40 = 10 Bits * 4 Gauges
-	etl::array<uint8_t, 40> m_buffer;
+	// 5 bytes = 40bits = 10 bits * 4 Gauges
+	etl::array<uint8_t, 5> m_buffer;
+	etl::array<uint8_t, 5> m_reverse_buffer;
 
 	void FillBufferOfGauge(const uint8_t& gauge, const uint16_t& value);
 
 public:
-	CS4192(SPI_HandleTypeDef& hspi, GPIO_TypeDef& cs_port, const uint16_t& cs_pin, GPIO_TypeDef& oe_port, const uint16_t& oe_pin);
+	CS4192(SPI_HandleTypeDef& hspi, GPIO_TypeDef* cs_port, const uint16_t& cs_pin, GPIO_TypeDef* oe_port, const uint16_t& oe_pin);
 
 	void Init();
 	void Update();
