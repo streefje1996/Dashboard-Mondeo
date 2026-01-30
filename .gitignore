@@ -42,3 +42,6 @@
 
 Debug/*
 .settings/*
+
+*.png
+*.pdf

@@ -18,6 +18,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
+#include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -56,12 +59,6 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-template <typename T>
-T test(T a) {
-	return a + a;
-}
-
-
 /* USER CODE END 0 */
 
 /**
@@ -72,8 +69,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
-	int u {test(6)};
 
   /* USER CODE END 1 */
 
@@ -96,6 +91,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_SPI1_Init();
+  MX_I2C1_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
