@@ -13,7 +13,7 @@ Timer_adapter& Timer_adapter::GetInstance() {
 	return s_timer_adapter;
 }
 
-void Timer_adapter::SetCallback(TIM_TypeDef* timer, DelegateVoid func) {
+void Timer_adapter::SetCallback(TIM_TypeDef* timer, const DelegateVoid& func) {
 	s_callback[timer] = func;
 }
 

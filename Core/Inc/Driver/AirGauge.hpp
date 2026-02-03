@@ -48,6 +48,7 @@ private:
 	etl::array<GaugeSettings, s_num_gauges> m_gauge_settings;
 
 	void DefaultGaugesConfig();
+	bool MoveGaugeToUpperLimit(const bool& max);
 
 };
 

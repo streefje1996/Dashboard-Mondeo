@@ -69,41 +69,43 @@ void AirGauge::Shutdown() {
 }
 
 void AirGauge::ShutdownCallback() {
-	float total{};
-	float target{};
-	for (uint8_t i = 0; i < m_gauge_settings.size(); ++i) {
-		SetAngle(i, GetAngle(i) - 1.f);
-		Update();
-		total+=GetAngle(i);
-		target+=m_gauge_settings[i].min_angle;
-	}
-
-	if (total == target) {
-		HAL_TIM_Base_Stop_IT(&htim2);
-		return;
-	}
+	if (!MoveGaugeToUpperLimit(false)) return;
+	HAL_TIM_Base_Stop_IT(&htim2);
 }
 
 void AirGauge::StartUpCallback() {
-	float total{};
-	float target{};
-	for (uint8_t i = 0; i < m_gauge_settings.size(); ++i) {
-		SetAngle(i, GetAngle(i) + 1.f);
-		Update();
-		total+=GetAngle(i);
-		target+=m_gauge_settings[i].max_angle;
-	}
-
-	if (total == target) {
-		HAL_TIM_Base_Stop_IT(&htim2);
-		Shutdown();
-		return;
-	}
+	if (!MoveGaugeToUpperLimit(true)) return;
+	HAL_TIM_Base_Stop_IT(&htim2);
 }
+
+
 
 void AirGauge::DefaultGaugesConfig() {
 	CalibrateGauge(Gauge::Temp, 104.16, 0, 255.84);
 	CalibrateGauge(Gauge::Tacho, 104.16, 0, 255.84);
 	CalibrateGauge(Gauge::Speed, 104.16, 0, 255.84);
 	CalibrateGauge(Gauge::Fuel, 104.16, 0, 255.84);
+}
+
+bool AirGauge::MoveGaugeToUpperLimit(const bool& max) {
+	float total{};
+	float target_total{};
+
+	for (uint8_t i = 0; i < m_gauge_settings.size(); ++i) {
+		if (max) {
+			SetPercentage(i, GetPercentage(i) + 1.f);
+			target_total+=m_gauge_settings[i].max_angle;
+		} else {
+			SetPercentage(i, GetPercentage(i) - 1.f);
+			target_total+=m_gauge_settings[i].min_angle;
+		}
+		Update();
+		total+=GetAngle(i);
+	}
+
+	if (total == target_total) {
+		return true;
+	}
+
+	return false;
 }

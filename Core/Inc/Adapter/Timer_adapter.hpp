@@ -19,7 +19,7 @@ public:
 
 	static Timer_adapter& GetInstance();
 
-	void SetCallback(TIM_TypeDef* timer, DelegateVoid func);
+	void SetCallback(TIM_TypeDef* timer, const DelegateVoid& func);
 	static void Interupt_handler(TIM_TypeDef* timer);
 
 private:
