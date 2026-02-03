@@ -6,6 +6,8 @@
  */
 
 #include "Driver/AirGauge.hpp"
+#include "Adapter/Timer_adapter.hpp"
+#include "tim.h"
 
 AirGauge::AirGauge():
 m_cs4192{hspi1, SPI1_CS_GPIO_Port, SPI1_CS_Pin, ACG_OE_GPIO_Port, ACG_OE_Pin}, m_gauge_settings{}
@@ -53,17 +55,55 @@ void AirGauge::SetPercentage(const uint8_t &gauge, const float &percentage) {
 
 void AirGauge::Init() {
 	m_cs4192.Init();
-
-
+	Timer_adapter::GetInstance().SetCallback(htim2.Instance, etl::delegate<void(void)>::create<AirGauge, &AirGauge::StartUpCallback>(*this));
+	HAL_TIM_Base_Start_IT(&htim2);
 }
 
 void AirGauge::Update() {
 	m_cs4192.Update();
 }
 
+void AirGauge::Shutdown() {
+	Timer_adapter::GetInstance().SetCallback(htim2.Instance, etl::delegate<void(void)>::create<AirGauge, &AirGauge::ShutdownCallback>(*this));
+	HAL_TIM_Base_Start_IT(&htim2);
+}
+
+void AirGauge::ShutdownCallback() {
+	float total{};
+	float target{};
+	for (uint8_t i = 0; i < m_gauge_settings.size(); ++i) {
+		SetAngle(i, GetAngle(i) - 1.f);
+		Update();
+		total+=GetAngle(i);
+		target+=m_gauge_settings[i].min_angle;
+	}
+
+	if (total == target) {
+		HAL_TIM_Base_Stop_IT(&htim2);
+		return;
+	}
+}
+
+void AirGauge::StartUpCallback() {
+	float total{};
+	float target{};
+	for (uint8_t i = 0; i < m_gauge_settings.size(); ++i) {
+		SetAngle(i, GetAngle(i) + 1.f);
+		Update();
+		total+=GetAngle(i);
+		target+=m_gauge_settings[i].max_angle;
+	}
+
+	if (total == target) {
+		HAL_TIM_Base_Stop_IT(&htim2);
+		Shutdown();
+		return;
+	}
+}
+
 void AirGauge::DefaultGaugesConfig() {
 	CalibrateGauge(Gauge::Temp, 104.16, 0, 255.84);
 	CalibrateGauge(Gauge::Tacho, 104.16, 0, 255.84);
-	CalibrateGauge(Gauge::Speed, 104,16, 0, 255.84);
+	CalibrateGauge(Gauge::Speed, 104.16, 0, 255.84);
 	CalibrateGauge(Gauge::Fuel, 104.16, 0, 255.84);
 }

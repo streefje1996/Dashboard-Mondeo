@@ -35,7 +35,10 @@ public:
 
 	void Init();
 	void Update();
+	void Shutdown();
 
+	void ShutdownCallback();
+	void StartUpCallback();
 
 private:
 	static constexpr uint8_t s_num_gauges{4};
