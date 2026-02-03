@@ -101,6 +101,7 @@ int main(void)
 
   AirGauge air_gauge{};
   air_gauge.Init();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

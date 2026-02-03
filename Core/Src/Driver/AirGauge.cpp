@@ -43,12 +43,12 @@ void AirGauge::SetAngle(const uint8_t& gauge, const float& angle) {
 	m_cs4192.SetGaugeAngle(gauge, m_gauge_settings[gauge].current_angle + m_gauge_settings[gauge].zero_angle);
 }
 
-float AirGauge::GetPercentage(const uint8_t &gauge) const {
+float AirGauge::GetPercentage(const uint8_t& gauge) const {
 	// percentage = ((current_angle - min_angle) * 100) / (max_angle - min_angle)
 	return ((GetAngle(gauge) - m_gauge_settings[gauge].min_angle) * 100) / (m_gauge_settings[gauge].max_angle - m_gauge_settings[gauge].min_angle);
 }
 
-void AirGauge::SetPercentage(const uint8_t &gauge, const float &percentage) {
+void AirGauge::SetPercentage(const uint8_t& gauge, const float& percentage) {
 	// current angle = (percentage * (max_angle - min_angle) / 100) + min_angle
 	SetAngle(gauge, (percentage * (m_gauge_settings[gauge].max_angle - m_gauge_settings[gauge].min_angle) / 100) + m_gauge_settings[gauge].min_angle);
 }
