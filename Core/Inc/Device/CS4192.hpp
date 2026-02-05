@@ -10,17 +10,19 @@
 
 #include "spi.h"
 #include "gpio.h"
-#include <math.h>
+#include "Adapter/Spi_adapter.hpp"
 #include <etl/array.h>
+#include <cmath>
+#include <etl/rounded_integral_division.h>
 
+// Template for number of gauges
+template<uint8_t N>
 class CS4192 {
 private:
-	static constexpr uint8_t s_gaugeResolution{10};
-	static constexpr float s_resolutionPerAngle{1023.f/360.f};
+	static constexpr uint8_t s_gauge_resolution{10};
+	static constexpr float s_resolution_per_angle{1023.f/360.f};
 
-	const uint8_t c_numGauges{4};
-
-	bool m_isSpiBusy{false};
+	bool m_is_spi_busy{false};
 
 	SPI_HandleTypeDef& m_hspi;
 
@@ -30,20 +32,69 @@ private:
 	GPIO_TypeDef* m_oe_port;
 	const uint16_t c_oe_pin;
 
-	// 5 bytes = 40bits = 10 bits * 4 Gauges
-	etl::array<uint8_t, 5> m_buffer;
-	etl::array<uint8_t, 5> m_reverse_buffer;
+	// N (number of gauges) * resolution / 8 bits (1 byte) - rounded up
+	etl::array<uint8_t, etl::divide_round_to_ceiling(N * s_gauge_resolution, 8)> m_buffer;
+	etl::array<uint8_t, etl::divide_round_to_ceiling(N * s_gauge_resolution, 8)> m_reverse_buffer;
 
-	void FillBufferOfGauge(const uint8_t& gauge, const uint16_t& value);
+	void FillBufferOfGauge(const uint8_t& gauge, const uint16_t& value) {
+		if (gauge >= N) return;
+		// 0x3FF is the max 10 bit value
+		if (value > 0x3FF) return;
+
+		// Calculate buffer index and offset using 8 bits
+		int buffer_index = (gauge * s_gauge_resolution) / 8;
+		int offset_lsb_first_half = (gauge * s_gauge_resolution) - (8 * buffer_index);
+		int bits_in_first_half = 8 - offset_lsb_first_half;
+		int offset_lsb_second_half = s_gauge_resolution - bits_in_first_half;
+
+		// Fill buffer
+		m_buffer[buffer_index] &= ~(0xFF << offset_lsb_first_half);
+		m_buffer[buffer_index] |= value << offset_lsb_first_half;
+
+		m_buffer[buffer_index+1] &= 0xFF << offset_lsb_second_half;
+		m_buffer[buffer_index+1] |= value >> bits_in_first_half;
+	}
 
 public:
-	CS4192(SPI_HandleTypeDef& hspi, GPIO_TypeDef* cs_port, const uint16_t& cs_pin, GPIO_TypeDef* oe_port, const uint16_t& oe_pin);
+	CS4192(SPI_HandleTypeDef& hspi, GPIO_TypeDef* cs_port, const uint16_t& cs_pin, GPIO_TypeDef* oe_port, const uint16_t& oe_pin):
+	m_hspi{hspi}, m_cs_port{cs_port}, c_cs_pin{cs_pin}, m_oe_port{oe_port}, c_oe_pin{oe_pin}, m_buffer{}, m_reverse_buffer{}
+	{
+		Spi_adaptor::GetInstance().SetCallback(etl::delegate<void(void)>::create<CS4192, &CS4192::TxCpltCallback>(*this));
+	}
 
-	void Init();
-	void Update();
+	void Init() {
+		HAL_GPIO_WritePin(m_cs_port, c_cs_pin, GPIO_PinState::GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_oe_port, c_oe_pin, GPIO_PinState::GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_cs_port, c_cs_pin, GPIO_PinState::GPIO_PIN_RESET);
+	}
 
-	void SetGaugeAngle(const uint8_t& gauge, const float& angle);
-	void TxCpltCallback();
+	void EnableOutput(const bool& enabled) {
+		if (enabled) {
+			HAL_GPIO_WritePin(m_oe_port, c_oe_pin, GPIO_PinState::GPIO_PIN_SET);
+			return;
+		}
+		HAL_GPIO_WritePin(m_oe_port, c_oe_pin, GPIO_PinState::GPIO_PIN_RESET);
+	}
+
+	void Update() {
+		if (m_is_spi_busy) return;
+		m_is_spi_busy = true;
+		HAL_GPIO_WritePin(m_cs_port, c_cs_pin, GPIO_PinState::GPIO_PIN_SET);
+
+		etl::reverse_copy(m_buffer.cbegin(), m_buffer.cend(), m_reverse_buffer.begin());
+		HAL_SPI_Transmit_DMA(&m_hspi, m_reverse_buffer.data(), m_reverse_buffer.size());
+	}
+
+	void SetGaugeAngle(const uint8_t& gauge, const float& angle) {
+		if (gauge >= N) return;
+
+		FillBufferOfGauge(gauge, std::fmod(angle, 360.f) * s_resolution_per_angle);
+	}
+
+	void TxCpltCallback() {
+		HAL_GPIO_WritePin(m_cs_port, c_cs_pin, GPIO_PinState::GPIO_PIN_RESET);
+		m_is_spi_busy = false;
+	}
 };
 
 
