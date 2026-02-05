@@ -76,6 +76,7 @@ void AirGauge::ShutdownCallback() {
 void AirGauge::StartUpCallback() {
 	if (!MoveGaugeToUpperLimit(true)) return;
 	HAL_TIM_Base_Stop_IT(&htim2);
+	Shutdown();
 }
 
 
@@ -87,6 +88,7 @@ void AirGauge::DefaultGaugesConfig() {
 	CalibrateGauge(Gauge::Fuel, 104.16, 0, 255.84);
 }
 
+// TODO: Need a better function for this, will do for now.
 bool AirGauge::MoveGaugeToUpperLimit(const bool& max) {
 	float total{};
 	float target_total{};
