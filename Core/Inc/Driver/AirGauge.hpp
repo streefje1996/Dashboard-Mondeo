@@ -49,7 +49,6 @@ private:
 
 	void DefaultGaugesConfig();
 	bool MoveGaugeToUpperLimit(const bool& max);
-
 };
 
 #endif /* INC_DRIVER_AIRGAUGE_HPP_ */
