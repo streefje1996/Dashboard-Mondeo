@@ -10,47 +10,20 @@
 #include "tim.h"
 
 AirGauge::AirGauge():
-m_cs4192{hspi1, SPI1_CS_GPIO_Port, SPI1_CS_Pin, ACG_OE_GPIO_Port, ACG_OE_Pin}, m_gauge_settings{}
+m_cs4192{hspi1, SPI1_CS_GPIO_Port, SPI1_CS_Pin, ACG_OE_GPIO_Port, ACG_OE_Pin},
+m_gauges{
+	Gauge{104.16, 0, 255.84, 60, 120}, //TEMP
+	Gauge{104.16, 0, 255.84, 0, 8000}, //TACHO
+	Gauge{104.16, 0, 255.84, 0, 240}, //SPEED
+	Gauge{104.16, 0, 255.84, 0, 100} //FUEL
+}
 {
-	DefaultGaugesConfig();
 }
 
-void AirGauge::CalibrateGauge(const uint8_t& gauge, const float& zero_angle, const float& min_angle, const float& max_angle) {
-	if (gauge > s_num_gauges) return;
-	m_gauge_settings[gauge].zero_angle = zero_angle;
-	m_gauge_settings[gauge].min_angle = min_angle;
-	m_gauge_settings[gauge].max_angle = max_angle;
-}
+void AirGauge::SetGaugeByValue(const Gauges& gauge, const uint16_t& val) {
+	m_gauges[gauge].SetGaugeByValue(val);
 
-float AirGauge::GetAngle(const uint8_t& gauge) const {
-	if (gauge > s_num_gauges) return 0;
-	return m_gauge_settings[gauge].current_angle;
-}
-
-void AirGauge::SetAngle(const uint8_t& gauge, const float& angle) {
-	if (gauge > s_num_gauges) return;
-
-	if (angle < m_gauge_settings[gauge].min_angle) {
-		m_gauge_settings[gauge].current_angle = m_gauge_settings[gauge].min_angle;
-	}
-	else if (angle > m_gauge_settings[gauge].max_angle) {
-		m_gauge_settings[gauge].current_angle = m_gauge_settings[gauge].max_angle;
-	}
-	else {
-		m_gauge_settings[gauge].current_angle = angle;
-	}
-
-	m_cs4192.SetGaugeAngle(gauge, m_gauge_settings[gauge].current_angle + m_gauge_settings[gauge].zero_angle);
-}
-
-float AirGauge::GetPercentage(const uint8_t& gauge) const {
-	// percentage = ((current_angle - min_angle) * 100) / (max_angle - min_angle)
-	return ((GetAngle(gauge) - m_gauge_settings[gauge].min_angle) * 100) / (m_gauge_settings[gauge].max_angle - m_gauge_settings[gauge].min_angle);
-}
-
-void AirGauge::SetPercentage(const uint8_t& gauge, const float& percentage) {
-	// current angle = (percentage * (max_angle - min_angle) / 100) + min_angle
-	SetAngle(gauge, (percentage * (m_gauge_settings[gauge].max_angle - m_gauge_settings[gauge].min_angle) / 100) + m_gauge_settings[gauge].min_angle);
+	m_cs4192.SetGaugeAngle(gauge, m_gauges[gauge].GetRelativeAngle());
 }
 
 void AirGauge::Init() {
@@ -79,31 +52,24 @@ void AirGauge::StartUpCallback() {
 	Shutdown();
 }
 
-
-
-void AirGauge::DefaultGaugesConfig() {
-	CalibrateGauge(Gauge::Temp, 104.16, 0, 255.84);
-	CalibrateGauge(Gauge::Tacho, 104.16, 0, 255.84);
-	CalibrateGauge(Gauge::Speed, 104.16, 0, 255.84);
-	CalibrateGauge(Gauge::Fuel, 104.16, 0, 255.84);
-}
-
 // TODO: Need a better function for this, will do for now.
 bool AirGauge::MoveGaugeToUpperLimit(const bool& max) {
 	float total{};
 	float target_total{};
+	uint8_t i = 0;
 
-	for (uint8_t i = 0; i < m_gauge_settings.size(); ++i) {
+	for (auto& gauge : m_gauges) {
 		if (max) {
-			SetPercentage(i, GetPercentage(i) + 1.f);
-			target_total+=m_gauge_settings[i].max_angle;
+			gauge.SetPercentage(gauge.GetPercentage() + 1.f);
+			target_total+=gauge.GetMaxAngle();
 		} else {
-			SetPercentage(i, GetPercentage(i) - 1.f);
-			target_total+=m_gauge_settings[i].min_angle;
+			gauge.SetPercentage(gauge.GetPercentage() - 1.f);
+			target_total+=gauge.GetMinAngle();
 		}
-		Update();
-		total+=GetAngle(i);
+		m_cs4192.SetGaugeAngle(i++, gauge.GetRelativeAngle());
+		total+=gauge.GetAbsoluteAngle();
 	}
+	Update();
 
 	if (total == target_total) {
 		return true;

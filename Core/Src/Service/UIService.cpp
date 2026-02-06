@@ -22,10 +22,10 @@ void UIService::on_receive(const Stop &msg) {
 }
 
 void UIService::on_receive(const GaugesInfo &msg) {
-	m_air_gauge.SetAngle(Gauge::Speed, msg.speed);
-	m_air_gauge.SetAngle(Gauge::Tacho, msg.rpm);
-	m_air_gauge.SetAngle(Gauge::Fuel, msg.fuel);
-	m_air_gauge.SetAngle(Gauge::Temp, msg.temp);
+	m_air_gauge.SetGaugeByValue(Gauges::SPEED, msg.speed);
+	m_air_gauge.SetGaugeByValue(Gauges::TACHO, msg.rpm);
+	m_air_gauge.SetGaugeByValue(Gauges::FUEL, msg.fuel);
+	m_air_gauge.SetGaugeByValue(Gauges::TEMP, msg.temp);
 	m_air_gauge.Update();
 }
 
