@@ -27,7 +27,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "Driver/AirGauge.hpp"
+#include "Messages.hpp"
+#include "Service/UIService.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,8 +100,14 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
-  AirGauge air_gauge{};
-  air_gauge.Init();
+  LogBus log_bus;
+  InfoBus info_bus;
+
+  UIService ui_service{log_bus};
+
+  info_bus.subscribe(ui_service);
+
+  info_bus.receive(Start{});
 
   /* USER CODE END 2 */
 

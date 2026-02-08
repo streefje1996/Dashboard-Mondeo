@@ -8,30 +8,17 @@
 #ifndef INC_DRIVER_AIRGAUGE_HPP_
 #define INC_DRIVER_AIRGAUGE_HPP_
 
+#include <Driver/GaugeBase.hpp>
 #include "Device/CS4192.hpp"
 #include <etl/array.h>
 
-enum Gauge {Temp, Tacho, Speed, Fuel};
-
-struct GaugeSettings {
-	float zero_angle{};
-	float min_angle{};
-	float max_angle{};
-	float current_angle{};
-};
+enum Gauges {TEMP, TACHO, SPEED, FUEL};
 
 class AirGauge {
 public:
-
 	AirGauge();
 
-	void CalibrateGauge(const uint8_t& gauge, const float& zero_angle, const float& min_angle, const float& max_angle);
-
-	float GetAngle(const uint8_t& gauge) const;
-	void SetAngle(const uint8_t& gauge, const float& angle);
-
-	float GetPercentage(const uint8_t& gauge) const;
-	void SetPercentage(const uint8_t& gauge, const float& percentage);
+	void SetGaugeByValue(const Gauges& gauge, const uint16_t& val);
 
 	void Init();
 	void Update();
@@ -45,11 +32,9 @@ private:
 
 	CS4192<s_num_gauges> m_cs4192;
 
-	etl::array<GaugeSettings, s_num_gauges> m_gauge_settings;
+	etl::array<Gauge, s_num_gauges> m_gauges;
 
-	void DefaultGaugesConfig();
 	bool MoveGaugeToUpperLimit(const bool& max);
-
 };
 
 #endif /* INC_DRIVER_AIRGAUGE_HPP_ */
