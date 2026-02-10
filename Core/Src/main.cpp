@@ -29,6 +29,8 @@
 /* USER CODE BEGIN Includes */
 #include "Messages.hpp"
 #include "Service/UIService.hpp"
+
+#include "Driver/CommunicationDriver.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -109,6 +111,9 @@ int main(void)
 
   info_bus.receive(Start{});
 
+  CommunicationDriver comm_driver{huart2};
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -116,6 +121,14 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  comm_driver.Update();
+
+	  if(comm_driver.IsDataReady())
+	  {
+		  auto test = comm_driver.GetData();
+
+		  comm_driver.SendData(test);
+	  }
 
     /* USER CODE BEGIN 3 */
   }
