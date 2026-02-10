@@ -22,5 +22,5 @@ void Spi_adaptor::Interupt_handler() {
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-	Spi_adaptor::GetInstance().Interupt_handler();
+	Spi_adaptor::Interupt_handler();
 }
