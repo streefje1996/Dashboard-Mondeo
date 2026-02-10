@@ -36,4 +36,5 @@ void UIService::on_receive(const ScreenInfo &msg) {
 }
 
 void UIService::on_receive_unknown(const etl::imessage &msg) {
+	m_log_bus.receive(Log{"Unknown Message"});
 }

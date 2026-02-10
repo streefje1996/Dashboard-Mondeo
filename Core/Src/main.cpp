@@ -30,7 +30,7 @@
 #include "Messages.hpp"
 #include "Service/UIService.hpp"
 
-#include "Driver/CommunicationDriver.hpp"
+#include "Service/CommunicationService.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -106,14 +106,13 @@ int main(void)
   InfoBus info_bus;
 
   UIService ui_service{log_bus};
+  CommunicationService comm_service{info_bus, log_bus};
 
   info_bus.subscribe(ui_service);
 
+  log_bus.subscribe(comm_service);
+
   info_bus.receive(Start{});
-
-  CommunicationDriver comm_driver{huart2};
-
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -121,14 +120,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  comm_driver.Update();
-
-	  if(comm_driver.IsDataReady())
-	  {
-		  auto test = comm_driver.GetData();
-
-		  comm_driver.SendData(test);
-	  }
+	  comm_service.Update();
 
     /* USER CODE BEGIN 3 */
   }
