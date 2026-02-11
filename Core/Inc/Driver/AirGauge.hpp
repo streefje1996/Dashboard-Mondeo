@@ -12,7 +12,13 @@
 #include "Device/CS4192.hpp"
 #include <etl/array.h>
 
-enum Gauges {TEMP, TACHO, SPEED, FUEL};
+#define TEST_SETUP
+
+#ifdef TEST_SETUP
+enum Gauges { TACHO, SPEED, TEMP, FUEL};
+#else
+enum Gauges { TEMP, TACHO, SPEED, FUEL};
+#endif
 
 class AirGauge {
 public:

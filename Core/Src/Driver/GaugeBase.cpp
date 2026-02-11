@@ -55,15 +55,15 @@ float Gauge::GetPercentage() const {
 
 void Gauge::SetGaugeByValue(const uint16_t& val) {
 	uint16_t val_limited = val;
-	if (val < m_max_val) {
+	if (val > m_max_val) {
 		val_limited = m_max_val;
 	}
-	else if (val > m_min_val) {
+	else if (val < m_min_val) {
 		val_limited = m_min_val;
 	}
 	else {
 		val_limited = val;
 	}
 
-	SetAngle(val_limited * m_angle_per_val);
+	SetAngle((val_limited - m_min_val) * m_angle_per_val);
 }

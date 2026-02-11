@@ -13,7 +13,7 @@
 #include <etl/string.h>
 #include "Lights.hpp"
 
-#define MAX_STRING_LENGTH 30
+#define MAX_STRING_LENGTH 20
 
 using InfoBus = etl::message_bus<1>;
 using LogBus = etl::message_bus<1>;
@@ -54,7 +54,9 @@ struct ScreenInfo : public etl::message<MsgId::SCREEN_INFO> {
 
 
 struct Log : public etl::message<MsgId::LOG> {
-	etl::string<MAX_STRING_LENGTH> message{};
+	etl::string<MAX_STRING_LENGTH> message;
+
+	Log(const etl::string<MAX_STRING_LENGTH>& msg) : message{msg} {}
 };
 
 #endif /* INC_MESSAGES_HPP_ */

@@ -11,12 +11,21 @@
 
 AirGauge::AirGauge():
 m_cs4192{hspi1, SPI1_CS_GPIO_Port, SPI1_CS_Pin, ACG_OE_GPIO_Port, ACG_OE_Pin},
+#ifdef TEST_SETUP
+m_gauges{
+	Gauge{104.16, 0, 255.84, 0, 8000}, //TACHO
+	Gauge{104.16, 0, 255.84, 0, 240}, //SPEED
+	Gauge{104.16, 0, 255.84, 60, 120}, //TEMP
+	Gauge{104.16, 0, 255.84, 0, 100} //FUEL
+}
+#else
 m_gauges{
 	Gauge{104.16, 0, 255.84, 60, 120}, //TEMP
 	Gauge{104.16, 0, 255.84, 0, 8000}, //TACHO
 	Gauge{104.16, 0, 255.84, 0, 240}, //SPEED
 	Gauge{104.16, 0, 255.84, 0, 100} //FUEL
 }
+#endif
 {
 }
 
