@@ -8,13 +8,14 @@
 #include "Service/UIService.hpp"
 
 UIService::UIService(LogBus& log_bus) :
-m_log_bus{log_bus}, m_air_gauge{}
+m_log_bus{log_bus}
 {
 
 }
 
 void UIService::on_receive(const Start &msg) {
 	m_air_gauge.Init();
+	m_lights.Init();
 }
 
 void UIService::on_receive(const Stop &msg) {
@@ -30,9 +31,15 @@ void UIService::on_receive(const GaugesInfo &msg) {
 }
 
 void UIService::on_receive(const LightInfo &msg) {
+	m_lights.SetLight(msg.light, msg.color);
+
 }
 
 void UIService::on_receive(const ScreenInfo &msg) {
+}
+
+void UIService::Update() {
+	m_lights.Update();
 }
 
 void UIService::on_receive_unknown(const etl::imessage &msg) {

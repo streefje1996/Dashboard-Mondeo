@@ -12,6 +12,7 @@
 #include <etl/message_bus.h>
 #include <etl/string.h>
 #include "Lights.hpp"
+#include "LedInfo.hpp"
 
 #define MAX_STRING_LENGTH 20
 

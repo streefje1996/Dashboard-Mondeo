@@ -98,8 +98,8 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI1_Init();
   MX_I2C1_Init();
-  MX_TIM1_Init();
   MX_TIM2_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
   LogBus log_bus;
@@ -111,8 +111,6 @@ int main(void)
   info_bus.subscribe(ui_service);
 
   log_bus.subscribe(comm_service);
-
-  info_bus.receive(Start{});
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -121,6 +119,8 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	  comm_service.Update();
+
+	  ui_service.Update();
 
     /* USER CODE BEGIN 3 */
   }

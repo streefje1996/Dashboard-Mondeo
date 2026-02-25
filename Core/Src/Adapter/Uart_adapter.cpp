@@ -21,7 +21,7 @@ void Uart_adapter::Interupt_handler(USART_TypeDef *usart, const uint16_t &size) 
 }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-	if (huart->RxEventType == HAL_UART_RXEVENT_HT) return;
+	if (huart->RxEventType != HAL_UART_RXEVENT_IDLE) return;
 	Uart_adapter::Interupt_handler(huart->Instance, Size);
 }
 

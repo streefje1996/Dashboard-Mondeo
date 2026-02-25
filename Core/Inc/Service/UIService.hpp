@@ -11,14 +11,19 @@
 #include "Messages.hpp"
 #include <etl/message_router.h>
 #include "Driver/AirGauge.hpp"
+#include "Driver/LightDriver.hpp"
+
 
 class UIService : public etl::message_router<UIService, Start, Stop, GaugesInfo, LightInfo, ScreenInfo> {
 private:
 	LogBus& m_log_bus;
-	AirGauge m_air_gauge;
+	AirGauge m_air_gauge{};
+	LightDriver m_lights{};
 
 public:
 	UIService(LogBus& log_bus);
+
+	void Update();
 
 	void on_receive(const Start& 		msg);
 	void on_receive(const Stop& 		msg);

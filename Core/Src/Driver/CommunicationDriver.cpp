@@ -13,7 +13,7 @@ m_huart{huart}
 {
 	auto func = Uart_adapter::DelegateFunc::create<CommunicationDriver, &CommunicationDriver::UartCallback>(*this);
 	Uart_adapter::GetInstance().SetCallback(m_huart.Instance, func);
-	HAL_UARTEx_ReceiveToIdle_DMA(&m_huart, m_rx_buffer.data(), m_rx_buffer.size());
+	HAL_UARTEx_ReceiveToIdle_DMA(&m_huart, m_rx_buffer.data(), DataArray::SIZE);
 }
 
 const etl::array_view<uint8_t> CommunicationDriver::GetData() {
@@ -41,17 +41,28 @@ void CommunicationDriver::SendData(const etl::array_view<uint8_t> &data) {
 }
 
 void CommunicationDriver::UartCallback(const uint16_t &size) {
-	m_copy_size = size;
-	m_buffer_ready = true;
+	if(!m_buffer_ready) {
+		m_rx_buffer_tail = size;
+		m_buffer_ready = true;
+	}
 }
 
 void CommunicationDriver::Update() {
 	if (m_buffer_ready) {
-		etl::copy_n(m_rx_buffer.begin(), m_copy_size, m_data.begin());
-		m_data_size = m_copy_size;
+		if (m_rx_buffer_tail < m_rx_buffer_head) {
+
+			uint16_t size_to_full {DataArray::SIZE - m_rx_buffer_head};
+			etl::copy_n(m_rx_buffer.begin() + m_rx_buffer_head, size_to_full, m_data.begin());
+			etl::copy_n(m_rx_buffer.begin(), m_rx_buffer_tail, m_data.begin() + size_to_full);
+
+			m_data_size = size_to_full + m_rx_buffer_tail;
+
+		} else {
+			etl::copy_n(m_rx_buffer.begin() + m_rx_buffer_head, m_rx_buffer_tail - m_rx_buffer_head, m_data.begin());
+			m_data_size = m_rx_buffer_tail - m_rx_buffer_head;
+		}
+		m_rx_buffer_head = m_rx_buffer_tail;
 		m_data_ready = true;
 		m_buffer_ready = false;
 	}
-
-	HAL_UARTEx_ReceiveToIdle_DMA(&m_huart, m_rx_buffer.data(), m_rx_buffer.size());
 }

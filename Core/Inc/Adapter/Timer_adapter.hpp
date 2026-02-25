@@ -19,11 +19,12 @@ public:
 
 	static Timer_adapter& GetInstance();
 
-	void SetCallback(TIM_TypeDef* timer, const DelegateVoid& func);
-	static void Interupt_handler(TIM_TypeDef* timer);
+	void SetTimerElapsedCallback(TIM_TypeDef* timer, const DelegateVoid& func);
+	static void TimerElapsedInteruptHandler(TIM_TypeDef* timer);
 
 private:
-	static inline DelegateMap s_callback;
+	static inline DelegateMap s_timer_elapsed_callback;
+
 
 	Timer_adapter() = default;
 	~Timer_adapter() = default;

@@ -13,14 +13,14 @@ Timer_adapter& Timer_adapter::GetInstance() {
 	return s_timer_adapter;
 }
 
-void Timer_adapter::SetCallback(TIM_TypeDef* timer, const DelegateVoid& func) {
-	s_callback[timer] = func;
+void Timer_adapter::SetTimerElapsedCallback(TIM_TypeDef* timer, const DelegateVoid& func) {
+	s_timer_elapsed_callback[timer] = func;
 }
 
-void Timer_adapter::Interupt_handler(TIM_TypeDef* timer) {
-	s_callback[timer].call_if();
+void Timer_adapter::TimerElapsedInteruptHandler(TIM_TypeDef* timer) {
+	s_timer_elapsed_callback[timer].call_if();
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	Timer_adapter::Interupt_handler(htim->Instance);
+	Timer_adapter::TimerElapsedInteruptHandler(htim->Instance);
 }
