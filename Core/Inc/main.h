@@ -65,8 +65,10 @@ void Error_Handler(void);
 #define T_VCP_TX_GPIO_Port GPIOA
 #define T_VCP_RX_Pin GPIO_PIN_3
 #define T_VCP_RX_GPIO_Port GPIOA
-#define WS2811_DATA_Pin GPIO_PIN_8
+#define WS2811_DATA_Pin GPIO_PIN_6
 #define WS2811_DATA_GPIO_Port GPIOA
+#define LD3_Pin GPIO_PIN_6
+#define LD3_GPIO_Port GPIOC
 #define T_JTMS_Pin GPIO_PIN_13
 #define T_JTMS_GPIO_Port GPIOA
 #define T_JTCK_Pin GPIO_PIN_14
