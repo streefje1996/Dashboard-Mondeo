@@ -19,7 +19,9 @@ private:
 	LogBus& m_log_bus;
 	CommunicationDriver m_comm_driver;
 
+
 	const GaugesInfo ExtractGaugeData(const etl::string_view& str) const;
+	const LightInfo ExtractLightData(const etl::string_view& str) const;
 
 public:
 	CommunicationService(InfoBus& info_bus, LogBus& log_bus);

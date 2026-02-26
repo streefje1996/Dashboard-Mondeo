@@ -37,7 +37,7 @@ void AirGauge::SetGaugeByValue(const Gauges& gauge, const uint16_t& val) {
 
 void AirGauge::Init() {
 	m_cs4192.Init();
-	Timer_adapter::GetInstance().SetCallback(htim2.Instance, etl::delegate<void(void)>::create<AirGauge, &AirGauge::StartUpCallback>(*this));
+	Timer_adapter::GetInstance().SetTimerElapsedCallback(htim2.Instance, etl::delegate<void(void)>::create<AirGauge, &AirGauge::StartUpCallback>(*this));
 	HAL_TIM_Base_Start_IT(&htim2);
 }
 
@@ -46,7 +46,7 @@ void AirGauge::Update() {
 }
 
 void AirGauge::Shutdown() {
-	Timer_adapter::GetInstance().SetCallback(htim2.Instance, etl::delegate<void(void)>::create<AirGauge, &AirGauge::ShutdownCallback>(*this));
+	Timer_adapter::GetInstance().SetTimerElapsedCallback(htim2.Instance, etl::delegate<void(void)>::create<AirGauge, &AirGauge::ShutdownCallback>(*this));
 	HAL_TIM_Base_Start_IT(&htim2);
 }
 

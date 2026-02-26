@@ -16,7 +16,7 @@
 
 class CommunicationDriver {
 private:
-	using DataArray = etl::array<uint8_t ,20>;
+	using DataArray = etl::array<uint8_t, 200>;
 
 	inline static const etl::string<5> c_error_msg {"ERROR"};
 
@@ -25,6 +25,9 @@ private:
 
 	uint16_t m_copy_size{};
 	uint16_t m_data_size{};
+
+	uint16_t m_rx_buffer_tail{0};
+	uint16_t m_rx_buffer_head{0};
 
 	DataArray m_rx_buffer{};
 	DataArray m_tx_buffer{};

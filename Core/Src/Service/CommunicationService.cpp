@@ -16,8 +16,7 @@ m_info_bus{info_bus}, m_log_bus{log_bus}, m_comm_driver{huart2}
 {
 }
 
-const GaugesInfo CommunicationService::ExtractGaugeData(
-		const etl::string_view &str) const {
+const GaugesInfo CommunicationService::ExtractGaugeData(const etl::string_view &str) const {
 
 	GaugesInfo gauge_info{};
 	etl::array<uint16_t, 4> gauge_buffer;
@@ -43,6 +42,41 @@ const GaugesInfo CommunicationService::ExtractGaugeData(
 	return gauge_info;
 }
 
+const LightInfo CommunicationService::ExtractLightData(const etl::string_view &str) const {
+
+	LightInfo light_info{};
+
+	uint8_t size = str[1] > '9' ? 1 : 2;
+	uint8_t light_id = etl::to_arithmetic<uint8_t>(str.substr(0, size));
+
+	light_info.light = Lights{light_id};
+
+	switch (str[str.size()-1]) {
+		case 'R':
+			light_info.color = Color::RED;
+			break;
+		case 'G':
+			light_info.color = Color::GREEN;
+			break;
+		case 'B':
+			light_info.color = Color::BLUE;
+			break;
+		case 'W':
+			light_info.color = Color::WHITE;
+			break;
+		case 'O':
+			light_info.color = Color::ORANGE;
+			break;
+		case 'F':
+			light_info.color = Color::OFF;
+			break;
+		default:
+			light_info.color = Color::WHITE;
+			break;
+	}
+
+	return light_info;
+}
 
 void CommunicationService::on_receive(const Log &msg) {
 	m_comm_driver.SendData(etl::array_view<uint8_t>{(uint8_t*)(msg.message.data()), msg.message.size()});
@@ -58,15 +92,37 @@ void CommunicationService::Update() {
 	if (m_comm_driver.IsDataReady()) {
 		auto data = m_comm_driver.GetData();
 		etl::string_view str{(char*)data.data(), data.size()};
-		switch (str[0]) {
-			case 'G': // gauges
-				m_info_bus.receive(ExtractGaugeData(str.substr(1, str.size()-1)));
-				break;
-			case 's': // start
-				m_info_bus.receive(Start{});
-				break;
-			default:
-				break;
+
+		uint8_t search_pos{};
+		int8_t size{};
+
+		while (search_pos != str.length()) {
+			size = str.find(';', search_pos);
+			if (size == -1) break;
+			size -= search_pos;
+
+			auto sub_str = str.substr(search_pos, size);
+
+			search_pos += size + 1;
+
+			switch (sub_str[0]) {
+				case 'G': // gauges
+					m_info_bus.receive(ExtractGaugeData(sub_str.substr(1, sub_str.size()-1)));
+					break;
+				case 'L': // lights
+					m_info_bus.receive(ExtractLightData(sub_str.substr(1, sub_str.size()-1)));
+					break;
+				case 's': // start
+					m_info_bus.receive(Start{});
+					break;
+				case 'q': // quit
+					m_info_bus.receive(Stop{});
+					break;
+				default:
+					break;
+			}
 		}
+
 	}
 }
+
