@@ -30,6 +30,8 @@
 #include "Messages.hpp"
 #include "Service/UIService.hpp"
 
+#include "SSD1309.hpp"
+
 #include "Service/CommunicationService.hpp"
 /* USER CODE END Includes */
 
@@ -102,10 +104,12 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
+  SSD1309 screen{hi2c1, 0x78};
+
   LogBus log_bus;
   InfoBus info_bus;
 
-  UIService ui_service{log_bus};
+  UIService ui_service{log_bus, screen};
   CommunicationService comm_service{info_bus, log_bus};
 
   info_bus.subscribe(ui_service);
@@ -113,13 +117,14 @@ int main(void)
   log_bus.subscribe(comm_service);
   /* USER CODE END 2 */
 
+  info_bus.receive(Start{});
+  info_bus.receive(ScreenInfo{"Peter"});
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
 	  comm_service.Update();
-
 	  ui_service.Update();
 
     /* USER CODE BEGIN 3 */

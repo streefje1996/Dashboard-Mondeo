@@ -7,8 +7,8 @@
 
 #include "Service/UIService.hpp"
 
-UIService::UIService(LogBus& log_bus) :
-m_log_bus{log_bus}
+UIService::UIService(LogBus& log_bus, ScreenInterface& screen) :
+m_log_bus{log_bus}, m_screen{screen}
 {
 
 }
@@ -16,6 +16,7 @@ m_log_bus{log_bus}
 void UIService::on_receive(const Start &msg) {
 	m_air_gauge.Init();
 	m_lights.Init();
+	m_screen.EnableDisplay();
 }
 
 void UIService::on_receive(const Stop &msg) {
@@ -36,10 +37,12 @@ void UIService::on_receive(const LightInfo &msg) {
 }
 
 void UIService::on_receive(const ScreenInfo &msg) {
+	m_screen.SetString(0, 30, msg.message);
 }
 
 void UIService::Update() {
 	m_lights.Update();
+	m_screen.Update();
 }
 
 void UIService::on_receive_unknown(const etl::imessage &msg) {

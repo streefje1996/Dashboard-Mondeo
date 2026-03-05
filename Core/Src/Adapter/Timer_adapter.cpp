@@ -4,7 +4,6 @@
  *  Created on: 3 Feb 2026
  *      Author: Stefan
  */
- 
 
 #include "Adapter/Timer_adapter.hpp"
 

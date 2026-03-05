@@ -12,6 +12,7 @@
 #include <etl/message_router.h>
 #include "Driver/AirGauge.hpp"
 #include "Driver/LightDriver.hpp"
+#include "Interface/ScreenInterface.hpp"
 
 
 class UIService : public etl::message_router<UIService, Start, Stop, GaugesInfo, LightInfo, ScreenInfo> {
@@ -19,9 +20,10 @@ private:
 	LogBus& m_log_bus;
 	AirGauge m_air_gauge{};
 	LightDriver m_lights{};
+	ScreenInterface& m_screen;
 
 public:
-	UIService(LogBus& log_bus);
+	UIService(LogBus& log_bus, ScreenInterface& screen);
 
 	void Update();
 

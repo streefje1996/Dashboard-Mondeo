@@ -50,7 +50,9 @@ struct LightInfo : public etl::message<MsgId::LIGHT_INFO> {
 };
 
 struct ScreenInfo : public etl::message<MsgId::SCREEN_INFO> {
-	etl::string<MAX_STRING_LENGTH> message{};
+	etl::string<MAX_STRING_LENGTH> message;
+
+	ScreenInfo(const etl::string<MAX_STRING_LENGTH>& msg) :  message{msg} {}
 };
 
 
